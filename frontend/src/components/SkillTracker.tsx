@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { addXp as addXpApi} from "../api/activities";
 
 type Skill = {
     id: number;  //static
@@ -16,44 +17,23 @@ function SkillTracker() {
         { id: 3, name: "Job Applications", level: 0, xp: 0, xpToNext: 100},
         { id: 4, name: "Leetcode", level: 0, xp: 0, xpToNext: 100},
     ]);
-    
-    // function showSkills(){
-    //     return (
-    //         <ul>
-    //             {skills.map((skill) => (
-    //                 <li key={skill.id}>
-    //                     <strong>{skill.name}</strong>
-    //                     <div>Level: {skill.level}</div>
-    //                     <div>XP: {skill.xp} / {skill.xpToNext}</div>
-    //                 </li>
-    //             ))}
-    //         </ul>
-    //     );
-    // }
-    
-    function addXP(id: number, amount: number){
-        setSkills((previousSkills: Skill[]) => 
-            previousSkills.map((skill: Skill) => {
-                if (skill.id !== id) return skill;
-    
-    
-                let newXP = skill.xp + amount;
-                let newLevel = skill.level;
-                let newXPToNext = skill.xpToNext;
-    
-                while (newXP >= newXPToNext) {      //LEVEL UP LOGIC
-                    newXP -= newXPToNext;
-                    newLevel += 1;
-                    newXPToNext = Math.floor(newXPToNext * 1.2);
-                }
-                return{
-                    ...skill,
-                    xp: newXP,
-                    level: newLevel,
-                    xpToNext: newXPToNext,
-                };
-        }));
+
+    async function handleAddXp(skill: Skill, amount: number) {
+        try {
+          console.log("CLICK", { id: skill.id, amount });
+      
+          const updated = await addXpApi(skill.id, amount);
+          console.log("UPDATED FROM API", updated);
+      
+          setSkills(prev =>
+            prev.map(s => (s.id === updated.id ? { ...s, xp: updated.xp } : s))
+          );
+        } catch (err) {
+          console.error("addXpApi FAILED", err);
+          alert("API call failed — check console + backend terminal");
+        }
     }
+      
 
 
     return (
@@ -104,19 +84,19 @@ function SkillTracker() {
                             {/* XP buttons */}
                             <div className="flex gap-2">
                                 <button
-                                    onClick={() => addXP(skill.id, 10)}
+                                    onClick={async () => handleAddXp(skill, 10)}
                                     className="flex-1 rounded-full bg-amber-400 text-slate-900 text-xs font-semibold py-2 shadow-lg shadow-amber-500/30 hover:bg-amber-300 active:translate-y-px active: shadow-none transition"
                                 >
                                     +10 XP
                                 </button>
                                 <button
-                                    onClick={() => addXP(skill.id, 25)}
+                                    onClick={() => handleAddXp(skill, 25)}
                                     className="flex-1 rounded-full bg-amber-400 text-slate-900 text-xs font-semibold py-2 shadow-lg shadow-amber-500/30 hover:bg-amber-300 active:translate-y-px active: shadow-none transition"
                                 >
                                     +25 XP
                                 </button>
                                 <button
-                                    onClick={() => addXP(skill.id, 50)}
+                                    onClick={() => handleAddXp(skill, 50)}
                                     className="flex-1 rounded-full bg-amber-400 text-slate-900 text-xs font-semibold py-2 shadow-lg shadow-amber-500/30 hover:bg-amber-300 active:translate-y-px active: shadow-none transition"
                                 >
                                     +50 XP
@@ -151,20 +131,6 @@ function SkillTracker() {
         </div>
 
 
-
-
-
-        // <ul>
-        //     {skills.map(skill=> (
-        //         <li key={skill.id}>
-        //             <strong>{skill.name}</strong>
-        //             <div>Level: {skill.level}</div>
-        //             <div>XP: {skill.xp} / {skill.xpToNext}</div>
-
-        //             <button onClick={() => addXP(skill.id, 10)}>+10 XP</button>
-        //         </li>
-        //     ))}
-        // </ul>
     );
 }
 
