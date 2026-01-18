@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { addXp as addXpApi} from "../api/activities";
+import { addXp as addXpApi, getAllActivities } from "../api/activities";
+import{ useEffect, useState } from "react";
 
 type Skill = {
     id: number;  //static
@@ -11,12 +11,19 @@ type Skill = {
 
 
 function SkillTracker() {
-    const [skills, setSkills] = useState<Skill[]>([
-        { id: 1, name: "Studying", level: 0, xp: 0, xpToNext: 100},
-        { id: 2, name: "Internship", level: 0, xp: 0, xpToNext: 100},
-        { id: 3, name: "Job Applications", level: 0, xp: 0, xpToNext: 100},
-        { id: 4, name: "Leetcode", level: 0, xp: 0, xpToNext: 100},
-    ]);
+    const [skills, setSkills] = useState<Skill[]>([]);
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const rows = await getAllActivities();
+                setSkills(rows);
+            } catch (err) {
+                console.error("getAllActivities FAILED", err);
+                alert("Failed to load activities - check backend + console");
+            }
+        })();
+    }, []);
 
     async function handleAddXp(skill: Skill, amount: number) {
         try {
@@ -26,7 +33,7 @@ function SkillTracker() {
           console.log("UPDATED FROM API", updated);
       
           setSkills(prev =>
-            prev.map(s => (s.id === updated.id ? { ...s, xp: updated.xp } : s))
+            prev.map(s => (s.id === updated.id ? { ...s, ...updated } : s))
           );
         } catch (err) {
           console.error("addXpApi FAILED", err);
@@ -49,6 +56,9 @@ function SkillTracker() {
 
 
             <div className="grid gap-6 md:grid-cols-2">
+                {skills.length === 0 && (
+                    <div className = "text-slate-400">Loading activities...</div>
+                )}
                 {skills.map((skill: Skill) => {
                     const progress = 
                         skill.xpToNext > 0 ? Math.min((skill.xp / skill.xpToNext) * 100, 100) : 0;
@@ -77,8 +87,8 @@ function SkillTracker() {
 
                             {/*xp row*/}
                             <div className="flex justify-between text-xs text-slate-400 mb-4">
-                                <span>XP: {skill.xp.toLocaleString()}</span>
-                                <span>Next: {skill.xpToNext.toLocaleString()} XP</span>
+                                <span>XP: {(skill.xp ?? 0).toLocaleString()}</span>
+                                <span>Next: {(skill.xpToNext ?? 0).toLocaleString()} XP</span>
                             </div>
 
                             {/* XP buttons */}
