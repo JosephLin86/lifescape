@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:5000";
+const BASE_URL = "http://localhost:5100";
 
 export interface Activity {
     id: number;
@@ -32,7 +32,15 @@ export async function addXp(activityId: number, amount: number): Promise<Activit
         throw new Error(text || "Failed to add XP");
     }
 
-    return res.json(); //{id, name, xp}
+    const r = await res.json();
+
+    return {
+        id: r.id,
+        name: r.name,
+        xp: r.xp,
+        level: r.level,
+        xpToNext: r.xpToNext, // MUST exist from backend
+    };
 }
 
 export async function getActivity(activityId: number): Promise<Activity> {
@@ -43,7 +51,16 @@ export async function getActivity(activityId: number): Promise<Activity> {
         throw new Error(text || "Failed to fetch activity");
 
     }
-    return res.json(); //{id, name, xp}
+
+    const rows = await res.json();
+    return rows.map((r: any) => ({
+        id: r.id,
+        name: r.name,
+        xp: r.xp,
+        level: r.level,
+        xpToNext: r.xpToNext,
+
+    }));
 }
 
 

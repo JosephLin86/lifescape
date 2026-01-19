@@ -8,10 +8,10 @@ import activityRoutes from "./routes/activityRoutes.js";
 
 const app = express();
 
-app.use(cors({
-    origin: "http://localhost:5173",
-  }));
-  app.use(express.json());
+app.use(cors());
+
+
+app.use(express.json());
 
   
 app.use(express.json());

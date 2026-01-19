@@ -17,7 +17,7 @@ export async function addXpController(req, res){
             name: updated.name,
             xp: updated.xp,
             level: updated.level,
-            xpToNext: updated.xp_to_next,
+            xpToNext: updated.xpToNext,
         });
     } catch (err) {
         console.error(err);
